@@ -368,6 +368,7 @@ with work_col:
         </p>
         """, unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------
 # Prediction result
 # ---------------------------------------------------------
@@ -381,6 +382,13 @@ if predict_button:
     }])
 
     prediction = str(model.predict(employee)[0]).strip().title()
+
+    # Save employee details for the View Details section
+    st.session_state["employee_details"] = employee.iloc[0].to_dict()
+
+    # Save prediction result
+    st.session_state["prediction_result"] = prediction
+
     probabilities = model.predict_proba(employee)[0]
     yes_index = next(
         (i for i, label in enumerate(classes)
@@ -393,6 +401,8 @@ if predict_button:
 
     probability = float(probabilities[yes_index]) * 100
     probability = max(0.0, min(100.0, probability))
+
+    # Continue with your existing Prediction Result UI below
 
     st.markdown("""
     <div class="section-title" style="margin-top:13px">
@@ -447,12 +457,49 @@ if predict_button:
     """, unsafe_allow_html=True)
     st.balloons()
 
-# ---------------------------------------------------------
-# Footer
-# ---------------------------------------------------------
-st.markdown("""
-<div class="footer">
-  <div style="font-weight:700;color:#bcd9ff">AttritionAI　·　Employee Analytics Project</div>
-  <div style="margin-top:4px">Built with Python　·　 Streamlit　·　 Scikit-learn</div>
-</div>
-""", unsafe_allow_html=True)
+
+
+
+# ================= VIEW DETAILS SECTION =================
+
+st.markdown("---")
+
+with st.expander("📋 View Employee Details", expanded=False):
+
+    st.markdown("### 👤 Employee Information")
+
+    # Get saved employee details safely
+    employee_details = st.session_state.get("employee_details", {})
+
+    if employee_details:
+        st.write("**Age:**", employee_details.get("Age", "Not available"))
+        st.write("**Monthly Income:**", employee_details.get("MonthlyIncome", "Not available"))
+        st.write("**Years at Company:**", employee_details.get("YearsAtCompany", "Not available"))
+        st.write("**Job Satisfaction:**", employee_details.get("JobSatisfaction", "Not available"))
+        st.write("**Overtime:**", employee_details.get("OverTime", "Not available"))
+    else:
+        st.info("Employee details are not saved yet. Save the input values when the prediction is generated.")
+
+    st.markdown("---")
+    st.markdown("### 🤖 Prediction Result")
+
+    result = st.session_state.get("prediction_result")
+
+    if result is not None:
+        st.write("**Attrition Prediction:**", result)
+    else:
+        st.info("Please generate a prediction first.")
+
+# ================= FOOTER =================
+
+st.markdown("---")
+
+st.markdown(
+    """
+    <div style="text-align:center; color:#9CA3AF; padding:10px;">
+        <p>Employee Attrition Prediction System</p>
+        <p>Built with Python, Machine Learning and Streamlit</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
