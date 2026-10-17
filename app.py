@@ -286,7 +286,7 @@ def train_model():
     numeric_pipe = Pipeline([
         ("imputer", SimpleImputer(strategy="median"))
     ])
- categorical_pipe = Pipeline([
+    categorical_pipe = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
         ("onehot", OneHotEncoder(handle_unknown="ignore"))
     ])
