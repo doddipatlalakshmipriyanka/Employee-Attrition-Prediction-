@@ -248,7 +248,7 @@ from PIL import Image
 
 if BANNER_PATH.exists():
     banner = Image.open(BANNER_PATH)
-    new_height = 250  # Change this value to adjust height
+    new_height = 400  # Change this value to adjust height
     new_width = banner.width
 
     banner = banner.resize((new_width, new_height))
