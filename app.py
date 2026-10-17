@@ -244,8 +244,14 @@ with head_right:
 # Hero banner image, cropped from the reference provided.
 # If removed, a CSS banner is shown instead.
 # ---------------------------------------------------------
+
 if BANNER_PATH.exists():
-    st.image(str(BANNER_PATH), width=600)
+    banner = Image.open(BANNER_PATH)
+    new_height = 180  # Change this value to adjust height
+    new_width = banner.width
+
+    banner = banner.resize((new_width, new_height))
+    st.image(banner, use_container_width=True)
 else:
     st.markdown("""
     <div class="hero">
