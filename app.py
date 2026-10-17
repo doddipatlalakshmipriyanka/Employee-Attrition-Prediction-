@@ -1,96 +1,117 @@
-import streamlit as st
-import pandas as pd
-from pathlib import Path
-from html import escape
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.ensemble import RandomForestClassifier
+""", unsafe_allow_html=True)
+
+personal_col, work_col = st.columns(2, gap="medium")
+
+with personal_col:
+    with st.container(border=True):
+        st.markdown("### 👤  Personal Details")
+        age = st.number_input("Age (years)", min_value=18, max_value=80, value=30, step=1)
+        income = st.number_input("Monthly Income (₹)", min_value=0, max_value=1000000, value=40000, step=1000)
+        years = st.number_input("Years at Company", min_value=0, max_value=60, value=3, step=1)
+        predict_button = st.button("✨  Analyze Employee Attrition  →", use_container_width=True)
+
+with work_col:
+    with st.container(border=True):
+        st.markdown("### 💼  Work Details")
+        satisfaction = st.slider(
+            "Job Satisfaction", min_value=1, max_value=4, value=3,
+            key="job_satisfaction"
+        )
+        overtime = st.radio(
+            "Works Overtime?", ["No", "Yes"],
+            horizontal=True, key="overtime"
+        )
+        st.markdown("""
+        <p style="color:#a9c8ff;font-size:.69rem;margin-top:20px">
+        Satisfaction scale: 1 (Low) to 4 (High).
+        </p>
+        """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# Page setup
+# Prediction result
 # ---------------------------------------------------------
-st.set_page_config(
-    page_title="AttritionAI | Smart Employee Attrition Prediction",
-    page_icon="👥",
-    layout="wide",
-    initial_sidebar_state="collapsed",
-)
+if predict_button:
+    employee = pd.DataFrame([{
+        "Age": age,
+        "MonthlyIncome": income,
+        "YearsAtCompany": years,
+        "JobSatisfaction": satisfaction,
+        "OverTime": overtime
+    }])
 
-ROOT = Path(__file__).resolve().parent
-CSV_PATH = ROOT / "attrition.csv"
-BANNER_PATH = ROOT / "image" / "banner.png"
-if not BANNER_PATH.exists():
-    BANNER_PATH = ROOT / "images" / "banner.png"
+    prediction = str(model.predict(employee)[0]).strip().title()
+    probabilities = model.predict_proba(employee)[0]
+    yes_index = next(
+        (i for i, label in enumerate(classes)
+         if str(label).strip().lower() == "yes"),
+        None
+    )
+    if yes_index is None:
+        st.error("The Attrition column must include a 'Yes' class.")
+        st.stop()
+
+    probability = float(probabilities[yes_index]) * 100
+    probability = max(0.0, min(100.0, probability))
+
+    st.markdown("""
+    <div class="section-title" style="margin-top:13px">
+      <span class="section-num">02</span> Prediction Result
+    </div>
+    <div class="section-sub">See the model's prediction and the estimated probability of attrition.</div>
+    """, unsafe_allow_html=True)
+
+    result_col, prob_col = st.columns(2, gap="medium")
+
+    if prediction == "Yes":
+        result_icon = "⚠️"
+        result_color = "#ff829a"
+        result_title = "Attrition: YES"
+        result_copy = "The model predicts that this employee may leave the company."
+    else:
+        result_icon = "🛡️"
+        result_color = "#00e0b7"
+        result_title = "Attrition: NO"
+        result_copy = "The model predicts that this employee may stay with the company."
+
+    with result_col:
+        st.markdown(f"""
+        <div class="result-card">
+          <div class="result-icon">{result_icon}</div>
+          <div class="result-label">MODEL PREDICTION</div>
+          <div class="result-title" style="color:{result_color}">{escape(result_title)}</div>
+          <div class="result-copy">{escape(result_copy)}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with prob_col:
+        st.markdown(f"""
+        <div class="prob-card">
+          <div class="prob-layout">
+            <div class="prob-circle" style="--prob:{probability * 3.6}deg">
+              {probability:.1f}%
+            </div>
+            <div>
+              <div class="prob-heading">Attrition Probability</div>
+              <div class="prob-copy">Estimated probability assigned to the Yes class.</div>
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.progress(int(round(probability)), text=f"Estimated probability: {probability:.1f}%")
+
+    st.markdown("""
+    <div class="notice">
+      ⓘ This is a machine-learning estimate, not a guarantee. Results depend on the quality and representativeness of the training dataset.
+    </div>
+    """, unsafe_allow_html=True)
+    st.balloons()
 
 # ---------------------------------------------------------
-# CSS - styling inspired by your reference screenshot
+# Footer
 # ---------------------------------------------------------
 st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-:root {
-  --navy: #03102b;
-  --card: #061b3b;
-  --border: #164a87;
-  --muted: #b8d7ff;
-  --blue: #338cff;
-  --purple: #962cff;
-}
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp {
-  background:
-    radial-gradient(ellipse at 85% 0%, rgba(36,52,130,.32), transparent 36%),
-    linear-gradient(125deg, #020b20 0%, #03122e 58%, #040c29 100%);
-  color: #f7f9ff;
-}
-.block-container { max-width: 1240px; padding: 1rem 2rem 1rem; }
-#MainMenu, footer { visibility: hidden; }
-header[data-testid="stHeader"] { background: transparent; }
-h1,h2,h3,p,label { color: #f7f9ff; }
-
-/* Header */
-.brand { font-size: 1.65rem; line-height: 1.15; font-weight: 800; }
-.brand span { color: #a56bff; }
-.brand-sub { font-size: .68rem; color: #9bcaff; margin-left: 43px; }
-.top-tag {
-  display: inline-block; float: right; margin-top: 5px;
-  padding: 7px 13px; border-radius: 30px;
-  border: 1px solid #5632da; background: #16185a;
-  color: #f0eaff; font-size: .68rem;
-}
-
-/* Hero banner fallback */
-.hero {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 12px; margin: 15px 0 16px; padding: 20px 27px;
-  border-radius: 13px; border: 1px solid #4e3bdb;
-  background: linear-gradient(110deg,#3021a5,#282b99 65%,#6539dc);
-}
-.hero-kicker { color: #e0d5ff; font-size: .95rem; font-style: italic; }
-.hero-title { font-size: 1.45rem; font-weight: 800; line-height: 1.25; }
-.hero-copy { color: #e0e8ff; font-size: .75rem; line-height: 1.55; }
-.hero-art { font-size: 2.7rem; white-space: nowrap; }
-
-/* Section titles */
-.section-title { display:flex; align-items:center; gap:10px; font-size:1.1rem; font-weight:800; }
-.section-num {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:34px; height:34px; border-radius:50%;
-  background:linear-gradient(135deg,#398bff,#a02cff); color:white;
-  font-size:.82rem; font-weight:800; flex-shrink:0;
-}
-.section-sub { color:#b8d7ff; font-size:.72rem; margin:1px 0 10px 44px; }
-
-/* Cards */
-div[data-testid="stVerticalBlockBorderWrapper"] {
-  background: linear-gradient(145deg, rgba(5,29,63,.98), rgba(4,20,46,.98));
-  border: 1px solid #164a87; border-radius: 11px;
-  padding: 12px; box-shadow: 0 5px 18px rgba(0,0,0,.12);
-}
-div[data-testid="stVerticalBlockBorderWrapper"] h3 {
-  font-size: 1rem; font-weight: 750; margin-bottom: .6rem;
-}
-div[data-testid="stNumberInput"] label,
+<div class="footer">
+  <div style="font-weight:700;color:#bcd9ff">AttritionAI　·　Employee Analytics Project</div>
+  <div style="margin-top:4px">Built with Python　·　 Streamlit　·　 Scikit-learn</div>
+</div>
+""", unsafe_allow_html=True)
