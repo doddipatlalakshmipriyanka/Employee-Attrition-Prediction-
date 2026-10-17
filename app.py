@@ -245,7 +245,7 @@ with head_right:
 # If removed, a CSS banner is shown instead.
 # ---------------------------------------------------------
 if BANNER_PATH.exists():
-    st.image(str(BANNER_PATH), use_container_width=True)
+    st.image(str(BANNER_PATH), width=600)
 else:
     st.markdown("""
     <div class="hero">
