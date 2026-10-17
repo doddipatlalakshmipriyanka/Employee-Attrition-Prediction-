@@ -18,6 +18,19 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+st.markdown("""
+<style>
+/* Reduce the width of the entire application */
+.block-container {
+    max-width: 1000px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>
+""", unsafe_allow_html=True)
+
 ROOT = Path(__file__).resolve().parent
 CSV_PATH = ROOT / "attrition.csv"
 BANNER_PATH = ROOT / "image" / "banner.png"
