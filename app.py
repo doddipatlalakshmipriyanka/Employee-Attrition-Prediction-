@@ -22,7 +22,7 @@ st.markdown("""
 <style>
 /* Reduce the width of the entire application */
 .block-container {
-    max-width: 1000px;
+    max-width: 600px;
     padding-left: 2rem;
     padding-right: 2rem;
     margin-left: auto;
