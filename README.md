@@ -125,7 +125,7 @@ Employee attrition predictions can be inaccurate and may reflect bias in the dat
 👩‍💻 Author
 Doddipatla Lakshmi Priyanka
 B.Tech ECE Student | Machine Learning Project
-- GitHub: @doddipatlalakshmipriyanka
+- GitHub: https://github.com/doddipatlalakshmipriyanka
 <div align="center">
 
 Made with 💜 using Python and Streamlit
